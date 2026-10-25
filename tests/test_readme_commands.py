@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
@@ -14,7 +15,7 @@ def test_readme_commands_match_actual_clis() -> None:
     ):
         assert script in readme
         completed = subprocess.run(
-            [ROOT / ".venv/bin/python", ROOT / script, "--help"],
+            [sys.executable, ROOT / script, "--help"],
             capture_output=True,
             text=True,
             check=False,

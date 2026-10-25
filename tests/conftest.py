@@ -12,6 +12,19 @@ def fixture_dir() -> Path:
 
 
 @pytest.fixture
+def cpp_binary() -> Path:
+    root = Path(__file__).parents[1]
+    candidates = (
+        root / "cpp/build/microalpha_features",
+        root / "cpp/build/microalpha_features.exe",
+        root / "cpp/build/Release/microalpha_features.exe",
+    )
+    binary = next((path for path in candidates if path.is_file()), None)
+    assert binary is not None, f"C++ binary not found in: {candidates}"
+    return binary
+
+
+@pytest.fixture
 def synthetic_books() -> pd.DataFrame:
     """A long deterministic sequence suitable for W50 and horizon-50 tests."""
     rows = []

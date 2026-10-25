@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -17,16 +18,15 @@ def test_timer_records_five_raw_perf_counter_samples() -> None:
         measure_stage(lambda: None, repeats=4)
 
 
-def test_cpp_cli_emits_segmented_steady_clock_timings(tmp_path: Path) -> None:
+def test_cpp_cli_emits_segmented_steady_clock_timings(tmp_path: Path, cpp_binary: Path) -> None:
     source = tmp_path / "input.csv"
     output = tmp_path / "output.csv"
     source.write_text(
         "dataset_id,event_index,research_index,ask_price_1,ask_size_1,bid_price_1,bid_size_1\nd,0,0,101,300,99,900\n",
         encoding="utf-8",
     )
-    binary = Path(__file__).parents[1] / "cpp/build/microalpha_features"
     completed = subprocess.run(
-        [binary, "--input", source, "--output", output, "--levels", "1", "--timing"],
+        [cpp_binary, "--input", source, "--output", output, "--levels", "1", "--timing"],
         capture_output=True,
         text=True,
         check=False,
@@ -37,14 +37,14 @@ def test_cpp_cli_emits_segmented_steady_clock_timings(tmp_path: Path) -> None:
 
 
 def test_benchmark_cli_writes_all_implementations(
-    synthetic_books: pd.DataFrame, tmp_path: Path
+    synthetic_books: pd.DataFrame, tmp_path: Path, cpp_binary: Path
 ) -> None:
     input_path = tmp_path / "validated.parquet"
     synthetic_books.to_parquet(input_path, index=False)
     root = Path(__file__).parents[1]
     completed = subprocess.run(
         [
-            root / ".venv/bin/python",
+            sys.executable,
             root / "scripts/run_benchmark.py",
             "--input",
             input_path,
@@ -53,7 +53,7 @@ def test_benchmark_cli_writes_all_implementations(
             "--output-dir",
             tmp_path,
             "--cpp-binary",
-            root / "cpp/build/microalpha_features",
+            cpp_binary,
         ],
         capture_output=True,
         text=True,
