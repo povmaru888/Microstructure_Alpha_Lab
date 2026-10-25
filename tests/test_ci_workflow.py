@@ -16,4 +16,5 @@ def test_ci_runs_python_cpp_and_parity_without_raw_data() -> None:
         assert command in workflow
     assert "data/raw" not in workflow
     assert "ubuntu-24.04" in workflow
+    assert "Visual Studio 17 2022" in workflow
     assert "push:" in workflow and "pull_request:" in workflow
