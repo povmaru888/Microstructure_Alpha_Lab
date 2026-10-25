@@ -14,7 +14,7 @@ def test_release_ignores_sensitive_and_generated_paths() -> None:
 def test_release_ci_is_cross_platform_and_complete() -> None:
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "ubuntu-24.04" in workflow
-    assert "windows-latest" in workflow
+    assert "windows-2022" in workflow
     assert "ctest" in workflow and "pytest -q" in workflow
     checklist = (ROOT / "docs/release_checklist.md").read_text(encoding="utf-8")
     normalized = " ".join(checklist.split())
