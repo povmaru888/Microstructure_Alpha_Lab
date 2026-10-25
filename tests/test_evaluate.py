@@ -25,8 +25,20 @@ def test_fixed_prediction_schema_and_common_test_ids() -> None:
         def predict_proba(self, frame):
             return np.eye(3)
 
-    models.update({"h10_logistic": Dummy(), "h10_xgboost": Dummy()})
-    metadata = {"h10_logistic": {"features": ["obi_l1"]}, "h10_xgboost": {"features": ["obi_l1"]}}
+    models.update(
+        {
+            "h10_logistic": Dummy(),
+            "h10_xgboost": Dummy(),
+            "h10_lightgbm": Dummy(),
+            "h10_catboost": Dummy(),
+        }
+    )
+    metadata = {
+        "h10_logistic": {"features": ["obi_l1"]},
+        "h10_xgboost": {"features": ["obi_l1"], "encoded_classes": True},
+        "h10_lightgbm": {"features": ["obi_l1"], "encoded_classes": True},
+        "h10_catboost": {"features": ["obi_l1"], "encoded_classes": True},
+    }
     result = build_test_predictions(models, joined, metadata)
     assert {"y_true", "y_pred", "p_down", "p_flat", "p_up", "split"} <= set(result)
     assert all(group["event_index"].tolist() == [7, 8, 9] for _, group in result.groupby("model"))

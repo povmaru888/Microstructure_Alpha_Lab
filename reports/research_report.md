@@ -84,9 +84,10 @@ Validation only. Test is reserved for one frozen evaluation.
 ## Models and evaluation protocol
 
 M0 predicts the Train majority class. M1 is a symmetric OBI threshold rule. M2 is
-median imputation, standardisation, and multinomial Logistic Regression. M3 is a
-fixed-seed, single-thread XGBoost classifier chosen by Validation log loss. Training
-fails if Train does not contain all three classes rather than hiding the deficiency.
+median imputation, standardisation, and multinomial Logistic Regression. M3--M5 are
+fixed-seed, single-thread XGBoost, LightGBM, and CatBoost classifiers chosen by
+Validation log loss under the same depth and tree budget. Training fails if Train does
+not contain all three classes rather than hiding the deficiency.
 
 Frozen models must predict identical Test event IDs. Reported metrics are Macro-F1,
 Balanced Accuracy, MCC, per-class precision/recall/support, Log Loss, multiclass
@@ -99,8 +100,11 @@ observations and no naïve i.i.d. p-value is reported.
 On the frozen Test segments, XGBoost Macro-F1 was 0.3903, 0.3603, and 0.3942 for
 h10/h20/h50. Corresponding MCC was 0.1007, 0.1820, and 0.2206. These descriptive
 single-day results exceed the majority Macro-F1 values of 0.2141, 0.1972, and
-0.2206, but they are not evidence of out-of-day alpha. Complete class metrics, Log
-Loss, Brier scores, and confusion matrices are stored in the ignored run artifacts.
+0.2206. In the equal-budget booster extension, LightGBM achieved the best mean
+Macro-F1 (0.3849) and mean MCC (0.1703), narrowly ahead of XGBoost (0.3816 and
+0.1677). CatBoost had the best mean Log Loss (1.0152) but lower mean Macro-F1
+(0.3749). These are not evidence of out-of-day alpha. Complete results appear in
+`reports/booster_comparison.md` and the ignored run artifacts.
 
 ## Trading-cost sensitivity
 

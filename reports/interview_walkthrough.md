@@ -30,7 +30,8 @@ Validation-only OBI/XGBoost selection keep Test frozen.
 
 ## 3:00–4:00 — Model and evaluation contract
 
-Compare majority, OBI rule, Logistic Regression, and fixed-seed XGBoost on identical
+Compare majority, OBI rule, Logistic Regression, and fixed-seed XGBoost, LightGBM,
+and CatBoost on identical
 Test event IDs. Metrics include Macro-F1, balanced accuracy, MCC, per-class metrics,
 Log Loss, Brier score, and confusion matrices. Time/spread slices are descriptive;
 there are no naïve i.i.d. significance claims for autocorrelated events.

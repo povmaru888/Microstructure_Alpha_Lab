@@ -1,6 +1,7 @@
 """Leakage-controlled model training utilities."""
 
 from dataclasses import dataclass
+from time import perf_counter
 
 import numpy as np
 import pandas as pd
@@ -85,6 +86,7 @@ def train_xgboost(
 
     mapping = {-1: 0, 0: 1, 1: 2}
     best = None
+    started = perf_counter()
     for depth in (2, 3):
         model = XGBClassifier(
             n_estimators=30,
@@ -116,4 +118,104 @@ def train_xgboost(
         "validation_log_loss": best[0],
         "early_stopping_rounds": 5,
         "best_iteration": int(best[1].best_iteration),
+        "training_seconds": perf_counter() - started,
+        "encoded_classes": True,
+    }
+
+
+def train_lightgbm(
+    train: pd.DataFrame, valid: pd.DataFrame, features: list[str], random_state: int = 42
+) -> tuple[object, dict]:
+    from lightgbm import LGBMClassifier, early_stopping
+    from sklearn.metrics import log_loss
+
+    mapping = {-1: 0, 0: 1, 1: 2}
+    best = None
+    started = perf_counter()
+    for depth in (2, 3):
+        model = LGBMClassifier(
+            n_estimators=30,
+            max_depth=depth,
+            num_leaves=2**depth,
+            learning_rate=0.1,
+            objective="multiclass",
+            num_class=3,
+            random_state=random_state,
+            n_jobs=1,
+            deterministic=True,
+            force_col_wise=True,
+            verbosity=-1,
+        )
+        model.fit(
+            train[features],
+            train["label"].map(mapping),
+            eval_X=valid[features],
+            eval_y=valid["label"].map(mapping),
+            eval_metric="multi_logloss",
+            callbacks=[early_stopping(5, verbose=False)],
+        )
+        loss = log_loss(
+            valid["label"].map(mapping), model.predict_proba(valid[features]), labels=[0, 1, 2]
+        )
+        if best is None or loss < best[0]:
+            best = (loss, model, depth)
+    assert best
+    return best[1], {
+        "model_type": "lightgbm",
+        "max_depth": best[2],
+        "random_state": random_state,
+        "selected_using": "validation",
+        "validation_log_loss": best[0],
+        "early_stopping_rounds": 5,
+        "best_iteration": int(best[1].best_iteration_),
+        "training_seconds": perf_counter() - started,
+        "encoded_classes": True,
+    }
+
+
+def train_catboost(
+    train: pd.DataFrame, valid: pd.DataFrame, features: list[str], random_state: int = 42
+) -> tuple[object, dict]:
+    from catboost import CatBoostClassifier
+    from sklearn.metrics import log_loss
+
+    mapping = {-1: 0, 0: 1, 1: 2}
+    best = None
+    started = perf_counter()
+    for depth in (2, 3):
+        model = CatBoostClassifier(
+            iterations=30,
+            depth=depth,
+            learning_rate=0.1,
+            loss_function="MultiClass",
+            random_seed=random_state,
+            thread_count=1,
+            od_type="Iter",
+            od_wait=5,
+            allow_writing_files=False,
+            verbose=False,
+        )
+        model.fit(
+            train[features],
+            train["label"].map(mapping),
+            eval_set=(valid[features], valid["label"].map(mapping)),
+            use_best_model=True,
+            verbose=False,
+        )
+        loss = log_loss(
+            valid["label"].map(mapping), model.predict_proba(valid[features]), labels=[0, 1, 2]
+        )
+        if best is None or loss < best[0]:
+            best = (loss, model, depth)
+    assert best
+    return best[1], {
+        "model_type": "catboost",
+        "max_depth": best[2],
+        "random_state": random_state,
+        "selected_using": "validation",
+        "validation_log_loss": best[0],
+        "early_stopping_rounds": 5,
+        "best_iteration": int(best[1].get_best_iteration()),
+        "training_seconds": perf_counter() - started,
+        "encoded_classes": True,
     }

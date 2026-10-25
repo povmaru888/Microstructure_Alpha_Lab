@@ -19,7 +19,14 @@ from microalpha.artifacts import (
 from microalpha.config import Settings, load_settings
 from microalpha.labels import make_labels
 from microalpha.splits import make_time_splits
-from microalpha.train import fit_obi_rule, train_logistic, train_majority, train_xgboost
+from microalpha.train import (
+    fit_obi_rule,
+    train_catboost,
+    train_lightgbm,
+    train_logistic,
+    train_majority,
+    train_xgboost,
+)
 
 FEATURE_COLUMNS = [
     "relative_spread",
@@ -54,6 +61,7 @@ def run_experiment(settings: Settings, features_path: Path, output_root: Path, r
         raise ValueError("no configured model features are available")
     models: dict[str, object] = {}
     metadata: dict[str, dict] = {}
+    enabled = set(settings.models.enabled)
     for horizon in settings.labels.horizons:
         subset = joined[(joined["horizon"] == horizon) & joined["split"].notna()]
         train = subset[subset["split"] == "train"]
@@ -61,23 +69,34 @@ def run_experiment(settings: Settings, features_path: Path, output_root: Path, r
         if set(train["label"].astype(int)) != {-1, 0, 1}:
             raise ValueError(f"horizon {horizon} training data must contain all three classes")
         prefix = f"h{horizon}"
-        majority = train_majority(train["label"])
-        models[f"{prefix}_majority"] = majority
-        metadata[f"{prefix}_majority"] = majority
-        obi = fit_obi_rule(train, valid)
-        models[f"{prefix}_obi_rule"] = obi
-        metadata[f"{prefix}_obi_rule"] = obi
-        logistic = train_logistic(train, available, settings.models.random_state)
-        models[f"{prefix}_logistic"] = logistic
-        metadata[f"{prefix}_logistic"] = {
-            "model_type": "logistic",
-            "features": available,
-            "classes": logistic.named_steps["model"].classes_.astype(int).tolist(),
-            "selected_using": "train",
+        if "majority" in enabled:
+            majority = train_majority(train["label"])
+            models[f"{prefix}_majority"] = majority
+            metadata[f"{prefix}_majority"] = majority
+        if "obi_rule" in enabled:
+            obi = fit_obi_rule(train, valid)
+            models[f"{prefix}_obi_rule"] = obi
+            metadata[f"{prefix}_obi_rule"] = obi
+        if "logistic" in enabled:
+            logistic = train_logistic(train, available, settings.models.random_state)
+            models[f"{prefix}_logistic"] = logistic
+            metadata[f"{prefix}_logistic"] = {
+                "model_type": "logistic",
+                "features": available,
+                "classes": logistic.named_steps["model"].classes_.astype(int).tolist(),
+                "selected_using": "train",
+            }
+        tree_trainers = {
+            "xgboost": train_xgboost,
+            "lightgbm": train_lightgbm,
+            "catboost": train_catboost,
         }
-        xgboost, xgb_meta = train_xgboost(train, valid, available, settings.models.random_state)
-        models[f"{prefix}_xgboost"] = xgboost
-        metadata[f"{prefix}_xgboost"] = {**xgb_meta, "features": available}
+        for model_name, trainer in tree_trainers.items():
+            if model_name not in enabled:
+                continue
+            model, model_meta = trainer(train, valid, available, settings.models.random_state)
+            models[f"{prefix}_{model_name}"] = model
+            metadata[f"{prefix}_{model_name}"] = {**model_meta, "features": available}
     run_dir.mkdir(parents=True)
     atomic_write_parquet(run_dir / "labels.parquet", labelled)
     atomic_write_json(run_dir / "split_manifest.json", split_manifest)

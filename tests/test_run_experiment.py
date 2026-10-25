@@ -55,12 +55,12 @@ def test_run_experiment_writes_versioned_artifacts(tmp_path: Path) -> None:
     manifest = _module().run_experiment(settings, features_path, tmp_path / "runs", "trial")
     run = tmp_path / "runs/trial"
     assert (run / "labels.parquet").is_file()
-    assert len(list((run / "models").glob("*.joblib"))) == 12
+    assert len(list((run / "models").glob("*.joblib"))) == 18
     assert len(manifest["features_sha256"]) == 64
     assert manifest["dependency_lock_sha256"]
     assert len(manifest["artifact_sha256"]) >= 15
     evaluation = evaluate_run(run, features_path)
-    assert evaluation["metric_groups"] == 12
+    assert evaluation["metric_groups"] == 18
     for artifact in evaluation["artifacts"]:
         assert (run / artifact).is_file()
     refreshed = __import__("json").loads((run / "run_manifest.json").read_text(encoding="utf-8"))

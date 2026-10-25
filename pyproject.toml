@@ -8,7 +8,9 @@ version = "0.1.0"
 description = "Reproducible market microstructure research lab"
 requires-python = ">=3.12"
 dependencies = [
+  "catboost==1.2.10",
   "joblib==1.5.2",
+  "lightgbm==4.7.0",
   "numpy==2.3.4",
   "pandas==2.3.3",
   "pyarrow==22.0.0",

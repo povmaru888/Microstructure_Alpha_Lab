@@ -69,7 +69,9 @@ class SplitConfig(StrictModel):
 
 
 class ModelConfig(StrictModel):
-    enabled: tuple[Literal["majority", "obi_rule", "logistic", "xgboost"], ...]
+    enabled: tuple[
+        Literal["majority", "obi_rule", "logistic", "xgboost", "lightgbm", "catboost"], ...
+    ]
     random_state: int = 42
 
 

@@ -18,6 +18,8 @@ from sklearn.metrics import (
 from microalpha.artifacts import atomic_write_json, atomic_write_parquet, refresh_run_manifest
 from microalpha.train import CLASSES, predict_majority
 
+MODEL_ORDER = ("majority", "obi_rule", "logistic", "xgboost", "lightgbm", "catboost")
+
 
 def _one_hot(prediction: np.ndarray) -> np.ndarray:
     probability = np.zeros((len(prediction), 3))
@@ -35,8 +37,10 @@ def build_test_predictions(
         id_columns = ["dataset_id", "event_index", "research_index", "horizon", "label"]
         id_columns.extend(name for name in ("time_seconds", "relative_spread") if name in test)
         ids = test[id_columns]
-        for model_name in ("majority", "obi_rule", "logistic", "xgboost"):
+        for model_name in MODEL_ORDER:
             key = f"h{horizon}_{model_name}"
+            if key not in models:
+                continue
             model = models[key]
             if model_name == "majority":
                 prediction, probability = predict_majority(model, len(test))
@@ -51,8 +55,8 @@ def build_test_predictions(
                 raw_prediction = model.predict(test[features])
                 probability = model.predict_proba(test[features])
                 prediction = (
-                    CLASSES[raw_prediction.astype(int)]
-                    if model_name == "xgboost"
+                    CLASSES[np.asarray(raw_prediction).astype(int).reshape(-1)]
+                    if metadata[key].get("encoded_classes", model_name == "xgboost")
                     else raw_prediction
                 )
             probability = np.asarray(probability, dtype=float)

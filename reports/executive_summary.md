@@ -24,8 +24,8 @@ L1/L5/L10, Microprice/deviation, Event OFI, and rolling OFI at 10/20/50 events.
 
 Labels use future event-time Midprice only in the target. Chronological 60/20/20
 splits purge label windows that cross boundaries. Imputation/scaling fit on Train;
-OBI and XGBoost selection use Validation; Test remains frozen. Models are majority,
-OBI rule, Logistic Regression, and XGBoost. Evaluation fixes common Test IDs and
+OBI and boosted-tree selection use Validation; Test remains frozen. Models are
+majority, OBI rule, Logistic Regression, XGBoost, LightGBM, and CatBoost. Evaluation fixes common Test IDs and
 reports Macro-F1, balanced accuracy, MCC, class metrics, Log Loss, Brier score,
 confusion matrices, and descriptive time/spread slices.
 
@@ -44,6 +44,10 @@ h10/h20/h50, versus majority 0.2141/0.1972/0.2206. C++ processed about 152,880
 records/s, faster than the native loop but much slower than vectorised compute at
 about 2.19 million records/s. These are environment- and single-day-specific facts,
 not general alpha or C++ superiority claims.
+
+Under the same tree budget, LightGBM led the booster comparison on mean Macro-F1
+(0.3849) and MCC (0.1703), narrowly ahead of XGBoost (0.3816 and 0.1677). CatBoost
+had the best mean Log Loss (1.0152). All three failed to recall the flat class at h50.
 
 ## Failure cases and limitations
 

@@ -28,7 +28,7 @@ split:
   train_frac: 0.6
   valid_frac: 0.2
 models:
-  enabled: [majority, obi_rule, logistic, xgboost]
+  enabled: [majority, obi_rule, logistic, xgboost, lightgbm, catboost]
   random_state: 42
 benchmark:
   repeats: 5

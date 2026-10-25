@@ -5,6 +5,8 @@ from microalpha.train import (
     CLASSES,
     fit_obi_rule,
     predict_majority,
+    train_catboost,
+    train_lightgbm,
     train_logistic,
     train_majority,
     train_xgboost,
@@ -34,6 +36,26 @@ def test_xgboost_uses_validation_and_fixed_seed() -> None:
     assert metadata["early_stopping_rounds"] == 5
     assert metadata["best_iteration"] < 30
     assert model.predict_proba(valid[["x"]]).shape == (3, 3)
+
+
+def test_lightgbm_and_catboost_use_validation_and_fixed_seed() -> None:
+    train = pd.DataFrame(
+        {
+            "x": [-3, -2, -1, 0, 0.1, 1, 2, 3, -2.5, 0.2, 2.5],
+            "label": [-1, -1, -1, 0, 0, 1, 1, 1, -1, 0, 1],
+        }
+    )
+    valid = pd.DataFrame({"x": [-2.2, 0.05, 2.2], "label": [-1, 0, 1]})
+    for trainer, expected_type in (
+        (train_lightgbm, "lightgbm"),
+        (train_catboost, "catboost"),
+    ):
+        model, metadata = trainer(train, valid, ["x"], random_state=7)
+        assert metadata["model_type"] == expected_type
+        assert metadata["selected_using"] == "validation"
+        assert metadata["random_state"] == 7
+        assert metadata["encoded_classes"] is True
+        assert model.predict_proba(valid[["x"]]).shape == (3, 3)
 
 
 def test_obi_rule_selects_on_validation_without_test() -> None:
