@@ -1,0 +1,36 @@
+project:
+  name: Microstructure_Alpha_Lab
+  seed: 42
+  output_root: artifacts
+source:
+  provider: lobster
+  dataset_id: lobster_aapl_20120621_l10
+  symbol: AAPL
+  trade_date: '2012-06-21'
+  levels: 10
+  price_scale: 10000
+  message_path: data/raw/lobster/AAPL_2012-06-21_10levels/message.csv
+  orderbook_path: data/raw/lobster/AAPL_2012-06-21_10levels/orderbook.csv
+quality:
+  exclude_locked: true
+  exclude_crossed: true
+  market_hours_policy: provider_regular_session
+features:
+  depths: [1, 5, 10]
+  ofi_windows: [10, 20, 50]
+  depth_weights: equal
+labels:
+  horizons: [10, 20, 50]
+  threshold_mode: half_tick_over_mid
+  tick_size: null
+split:
+  method: chronological_purged
+  train_frac: 0.6
+  valid_frac: 0.2
+models:
+  enabled: [majority, obi_rule, logistic, xgboost]
+  random_state: 42
+benchmark:
+  repeats: 5
+  warmups: 1
+

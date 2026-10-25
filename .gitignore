@@ -1,0 +1,28 @@
+# Licensed or generated market data and experiment artifacts
+data/raw/**
+data/processed/**
+artifacts/**
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!artifacts/.gitkeep
+
+# Secrets and local environments
+.env
+.env.*
+!.env.example
+configs/*.local.yaml
+.venv/
+venv/
+
+# Python/build/editor output
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+cpp/build/
+.idea/
+.vscode/
+

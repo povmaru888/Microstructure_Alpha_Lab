@@ -1,0 +1,48 @@
+schema_version: '1.0'
+verified_at_utc: '2026-10-24T00:00:00Z'
+provider: LOBSTER
+official_pages:
+  samples: https://php.lobsterdata.com/info/DataSamples.php
+  structure: https://php.lobsterdata.com/info/DataStructure.php
+  current_terms: https://lobsterdata.com/terms/trial-and-sample-data
+sample:
+  symbol: AAPL
+  trade_date: '2012-06-21'
+  levels: 10
+  archive_filename: LOBSTER_SampleFile_AAPL_2012-06-21_10.zip
+  archive_available_on_official_legacy_page: true
+  downloaded: true
+  internal_filenames:
+    message: AAPL_2012-06-21_34200000_57600000_message_10.csv
+    orderbook: AAPL_2012-06-21_34200000_57600000_orderbook_10.csv
+    readme: LOBSTER_SampleFiles_ReadMe.txt
+  archive_sha256: 326839316d67d7819ca0541ffdf73cdb044d6ae4105cce0ef9c615e8848e9d43
+  message_sha256: 6562394b996138d5c4527b1282e77a1a385e844110550c34628fbd73bc5411e5
+  orderbook_sha256: ed75450031996e81bdc5fc985f6afe6851c81d7b2b39bccf13c56d845fe6ff5d
+  rows: 400391
+format:
+  message_columns: [time, event_type, order_id, size, price, direction]
+  orderbook_columns_per_level: [ask_price, ask_size, bid_price, bid_size]
+  price_scale: 10000
+  event_types:
+    1: submission
+    2: partial_cancellation
+    3: deletion
+    4: visible_execution
+    5: hidden_execution
+    6: cross_trade
+    7: trading_halt_indicator
+  directions: {'-1': sell_limit_order, '1': buy_limit_order}
+  empty_ask_price: 9999999999
+  empty_bid_price: -9999999999
+  empty_volume: 0
+  rows_are_positionally_aligned: true
+market_rules:
+  sample_session_seconds: [34200, 57600]
+  tick_size: 0.01
+  note: LOBSTER filename/README establish 09:30-16:00; SEC Regulation NMS Rule 612 establishes the $0.01 minimum pricing increment for NMS quotes priced at least $1.
+  tick_source: https://www.sec.gov/files/rules/final/34-51808.pdf
+redistribution:
+  raw_files_committable: false
+  note: Current trial/sample terms prohibit redistribution unless a valid licence permits it.
+
